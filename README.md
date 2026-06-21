@@ -97,6 +97,23 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Open a PR with your SKILL.md following t
 - Validate locally: `node scripts/validate-skill.js skills/category/skill-name/SKILL.md`
 - Open a PR
 
+## Testing
+
+The repository includes a starter Node test suite under [test/](test/).
+
+- Run all tests: `node --test`
+- Validate the registry scripts: `node scripts/build-index.js`
+- The CI workflow in [`.github/workflows/validate-skill.yml`](.github/workflows/validate-skill.yml) runs both the validation job and the Node test job on pull requests.
+
+Additional CI notes:
+
+- The workflow now also runs on `push` to `main` (same path filters) and can be triggered manually via `workflow_dispatch` from the Actions UI.
+- A `markdown-lint` job runs in CI to enforce Markdown style across the repo. Run it locally with:
+
+```bash
+npx markdownlint-cli2 "**/*.md"
+```
+
 ## Skill Quality Tiers
 
 - Bronze: Passes schema validation
