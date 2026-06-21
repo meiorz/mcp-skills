@@ -5,12 +5,14 @@ Thank you for helping build the internet library of SKILL.md files for MCP.
 ## How to Add a Skill
 
 ### 1. Fork and clone
+
 ```bash
 git clone https://github.com/meiorz/mcp-skills
 cd mcp-skills
 ```
 
 ### 2. Create your skill folder
+
 ```bash
 mkdir -p skills/<category>/<skill-name>
 # Example:
@@ -20,22 +22,38 @@ mkdir -p skills/domains/linear-app
 ### 3. Write your SKILL.md
 
 Follow [SCHEMA.md](SCHEMA.md) exactly. Your file must:
+
 - Start with valid YAML frontmatter
 - Include all 6 required sections
 - Be under 500 KB
 - Contain no secrets or credentials
 
 ### 4. Validate locally
+
 ```bash
 node scripts/validate-skill.js skills/<category>/<skill-name>/SKILL.md
+node --test
 ```
 
 ### 5. Open a Pull Request
 
 Use the PR template — select "New Skill" when opening. Your PR must:
+
 - Add exactly one new `SKILL.md` file (or update one existing file)
 - Pass all CI checks
 - Include a brief description of what the skill enables
+
+CI currently runs the schema/index validation job and the Node test suite from [`.github/workflows/validate-skill.yml`](.github/workflows/validate-skill.yml).
+
+CI details:
+
+- The workflow runs on pull requests that touch `skills/**/SKILL.md`, `scripts/**`, `test/**`, or `SCHEMA.md`.
+- The workflow also runs on `push` to `main` (same path filters) and can be run manually with `workflow_dispatch` from the Actions UI.
+- A `markdown-lint` job runs as part of the workflow to enforce Markdown formatting. Run it locally with:
+
+```bash
+npx markdownlint-cli2 "**/*.md"
+```
 
 ## Updating an Existing Skill
 
@@ -46,7 +64,7 @@ Use the PR template — select "New Skill" when opening. Your PR must:
 ## Skill Quality Tiers
 
 | Tier | Badge | Criteria |
-|---|---|---|
+| --- | --- | --- |
 | Bronze | (none) | Passes schema validation |
 | Silver | `silver` label | Tested by 3+ community members in production |
 | Gold | `gold` label | Official upstream source or 100+ documented real-world uses |
@@ -60,7 +78,7 @@ Domain maintainers are required reviewers for PRs in their category.
 To become a domain maintainer, open an issue titled `maintainer: <category>`.
 
 | Category | Maintainer(s) |
-|---|---|
+| --- | --- |
 | `security/` | TBD |
 | `devops/` | TBD |
 | `domains/` | TBD |
@@ -69,7 +87,7 @@ To become a domain maintainer, open an issue titled `maintainer: <category>`.
 
 ## PR Title Conventions
 
-```
+```text
 skill(<name>): add <short description>       # new skill
 update(<name>): <what changed>               # update existing skill
 fix(<name>): <what was fixed>                # bug fix

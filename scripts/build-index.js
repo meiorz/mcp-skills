@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 const {
     extractFrontmatter,
     normalizeSkillPath,
@@ -13,6 +14,35 @@ const ROOT = path.resolve(__dirname, '..');
 const SKILLS_DIR = path.join(ROOT, 'skills');
 const INDEX_JSON = path.join(ROOT, 'index.json');
 const INDEX_MD = path.join(ROOT, 'index.md');
+
+function getRepositorySlug(remoteUrl) {
+    if (remoteUrl) {
+        const httpsMatch = remoteUrl.match(/github\.com[:/]([^/]+\/[^/]+?)(?:\.git)?$/i);
+        if (httpsMatch) {
+            return httpsMatch[1];
+        }
+
+        const sshMatch = remoteUrl.match(/^git@github\.com:([^/]+\/[^/]+?)(?:\.git)?$/i);
+        if (sshMatch) {
+            return sshMatch[1];
+        }
+
+        return 'your-org/mcp-skills';
+    }
+
+    try {
+        const currentRemoteUrl = execFileSync('git', ['remote', 'get-url', 'origin'], {
+            cwd: ROOT,
+            encoding: 'utf8',
+        }).trim();
+
+        return getRepositorySlug(currentRemoteUrl);
+    } catch (error) {
+        // Fall through to the default slug below.
+    }
+
+    return 'your-org/mcp-skills';
+}
 
 function walkSkillFiles(dirPath, results = []) {
     if (!fs.existsSync(dirPath)) {
@@ -34,7 +64,7 @@ function walkSkillFiles(dirPath, results = []) {
     return results;
 }
 
-function buildSkillRecord(filePath) {
+function buildSkillRecord(filePath, repositorySlug = getRepositorySlug()) {
     const text = readFile(filePath);
     const extracted = extractFrontmatter(text);
     if (!extracted) {
@@ -49,7 +79,7 @@ function buildSkillRecord(filePath) {
         name: frontmatter.name,
         category: frontmatter.category,
         path: relativePath,
-        raw_url: `https://raw.githubusercontent.com/your-org/mcp-skills/main/${relativePath}`,
+        raw_url: `https://raw.githubusercontent.com/${repositorySlug}/main/${relativePath}`,
         version: frontmatter.version,
         tags: frontmatter.tags || [],
         triggers: frontmatter.triggers || [],
@@ -99,10 +129,19 @@ function buildIndex() {
     fs.writeFileSync(INDEX_MD, `${lines.join('\n')}\n`, 'utf8');
 }
 
-try {
-    buildIndex();
-    console.log('Index rebuilt successfully.');
-} catch (error) {
-    console.error(error.message);
-    process.exitCode = 1;
+if (require.main === module) {
+    try {
+        buildIndex();
+        console.log('Index rebuilt successfully.');
+    } catch (error) {
+        console.error(error.message);
+        process.exitCode = 1;
+    }
 }
+
+module.exports = {
+    buildIndex,
+    buildSkillRecord,
+    getRepositorySlug,
+    walkSkillFiles,
+};
